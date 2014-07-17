@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+	<head>
+	    <meta charset="utf-8">		
+	    <title>DEAP speed tests</title>
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<meta name="description" content="">
+    	<meta name="author" content="">	    
+	    <!-- Le styles -->
+	    <link href="https://raw.githubusercontent.com/twbs/bootstrap/v3.2.0/dist/css/bootstrap.css" rel="stylesheet">
+	    <style>
+	      body {
+	        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+	      }
+	      td.number {
+            text-align: right;
+          }
+	      th.number {
+            text-align: right;
+          }
+          .table-striped td , .mytable th { width:8%; }
+          .table-striped td + td, .mytable th + th { width:47%; }
+          .table-striped td + td + td, .mytable th + th + th{ width:15%; }
+          .table-striped td + td + td + td, .mytable th + th + th + th{ width:15%; }
+          .table-striped td + td + td + td +td , .mytable th + th + th + th +th { width:15%; }
+	    </style>
+	</head>
+	<body>
+
+	    <div class="navbar navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container">
+	           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </a>
+	          <a class="brand" href="./index.html">DEAP speed</a>
+	          <div class="nav-collapse">
+	            <ul class="nav">
+	              <li class=""><a href="./index.html">Home</a></li>
+              	  <!-- <li><a href="#about">About</a></li> -->
+              	  <!-- <li><a href="#contact">Contact</a></li> -->	              
+	            </ul>
+	          </div><!--/.nav-collapse -->
+	        </div>
+	      </div>
+	    </div>
+
+
+	    <div class="container" id="content">
+			<h2></h2>
+		    <div class="marketing">
+			<p>Click on an example name to get the speed comparison between interpreters. The mercurial hash tag will get you to the source code of that revision. Clicking on the column headers will sort the results according to that column, clicking a second time will reverse the order.</p>
+		    </div>
+	      <div id="results"></div>
+	      <hr class="soften">
+
+	     <!-- Footer
+	      ================================================== -->
+	      <footer class="footer">
+	        <p class="pull-right"><a href="#">Back to top</a></p>
+	      </footer>	      
+		</div>
+		
+		<script type="text/javascript" src="https://raw.githubusercontent.com/mbostock/d3/v3.4.10/d3.min.js"></script>
+		<script type="text/javascript" src="js/utility.js"></script>
+		<script type="text/javascript" src="data/interpreters.js"></script>
+		<script type="text/javascript">
+			var branch = GET("branch")
+			var version = GET("version")
+			var columns = ["Error?", "Example", "Date", "Changeset", "Execution Time"];
+			var parsedCSV;
+			var previousName = "";
+			var comparatorId = 0;
+
+			function transform(attrName) {
+				var comparators = [function (a, b) { return a[attrName] > b[attrName] ? 1 : a[attrName] == b[attrName] ? 0 : -1; },
+							  	   function (b, a) { return a[attrName] > b[attrName] ? 1 : a[attrName] == b[attrName] ? 0 : -1; }];
+				comparatorId = (attrName == previousName)? (comparatorId + 1) % 2 : 0;
+				previousName = attrName
+
+				d3.select("#results").selectAll("table").remove();
+
+			    var table = d3.select("#results").append("table"),
+			        thead = table.append("thead"),
+			        tbody = table.append("tbody");
+			    
+			    // change the class of the results table
+			    table.attr("class", "table table-striped")
+
+			    // append the header row
+			    thead.append("tr")
+			        .selectAll("th")
+			        .data(columns)
+			        .enter()
+			        .append("th")
+			        	.attr("onclick", function (d, i) { return "transform('" + d + "');";})
+			            .attr("class", function(d) { return (d != "Execution Time") ? "text" : "number" })  
+			        	.html(function(column) { return (column == attrName)? column + ((comparatorId == 0)? " &#9650;" : " &#9660;") : column; });
+
+			    // create a row for each object in the data
+			    var rows = tbody.selectAll("tr")
+			        .data(parsedCSV)
+			        .enter()
+			        .append("tr")
+                    .sort(comparators[comparatorId]);
+
+			    // create a cell in each row for each column
+			    var cells = rows.selectAll("td")
+			        .data(function(row) {
+			            return columns.map(function(column) {
+			                return {column: column, value: row[column]};
+			            });
+			        })
+			        .enter()
+			        .append("td")
+			            .attr("class", function(d) { return (d.column != "Execution Time") ? "text" : "number" })  
+			            .html(function(d) { return (d.column != "Execution Time") ?  d.value : d.value.toFixed(3); });
+			}
+
+			d3.select("#content").selectAll("h2").text(interpreter[version] + " (" + branch +")")
+			d3.csv(branch+"/data/"+version+"/last_results.csv", function(data){
+				parsedCSV = data
+				parsedCSV.forEach(function(o){
+					o["Execution Time"] = parseFloat(o["Execution Time"])
+					// For changeset link : http://code.google.com/p/deap/source/detail?r=
+					// For example link : http://code.google.com/p/deap/source/browse/examples/%example%.py?name=%branch%
+					// o["Example"] = "<a href='http://code.google.com/p/deap/source/browse/examples/"+o["Example"]+".py?name="+branch+"&r="+o["Changeset"]+"'>"+o["Example"]+"</a>"
+					o["Example"] = "<a href='./example.html?name="+o["Example"]+"&amp;branch="+branch+"'>"+o["Example"]+"</a>"
+					o["Changeset"] = "<a href='http://code.google.com/p/deap/source/detail?r="+o["Changeset"]+"'>"+o["Changeset"]+"</a>"
+				});
+				transform("Example")
+			});
+		</script>		
+	</body>
+</html>

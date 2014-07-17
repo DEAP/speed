@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+	<head>
+	    <meta charset="utf-8">
+	    <title>DEAP speed tests</title>
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<meta name="description" content="">
+    	<meta name="author" content="">	    
+	    <!-- Le styles -->
+	    <link href="https://raw.githubusercontent.com/twbs/bootstrap/v3.2.0/dist/css/bootstrap.css" rel="stylesheet">
+	    <link href="css/barchart.css" rel="stylesheet">
+	    <style>
+	      body {
+	        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+	      }     
+	    </style>
+
+	    <!-- Tracking -->
+	    <script type="text/javascript">
+	      var _gaq = _gaq || [];
+	      _gaq.push(['_setAccount', 'UA-15144370-4']);
+	      _gaq.push(['_trackPageview']);
+	    </script>
+	</head>
+	<body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="./index.html">DEAP speed</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class=""><a href="./index.html">Home</a></li>
+              <!-- <li><a href="#about">About</a></li> -->
+              <!-- <li><a href="#contact">Contact</a></li> -->
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container" id="content">
+    	<h1></h1>
+	  	<div id="graph" style="text-align: center;"></div>
+	  	<div id="results"></div>
+	  	<a href="" id="src">[Source code]</a>
+	  	<hr class="soften">
+
+     <!-- Footer
+      ================================================== -->
+      <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+      </footer>
+	</div>
+
+		<script type="text/javascript" src="https://raw.githubusercontent.com/mbostock/d3/v3.4.10/d3.min.js"></script>
+		<script type="text/javascript" src="js/utility.js"></script>
+		<script type="text/javascript" src="data/interpreters.js"></script>
+		<script type="text/javascript">
+			var branch = GET("branch")		
+			var example = GET("name")
+			var columns = ["Interpreter", "Date", "Changeset", "Execution Time", "Error?"];
+			var parsedCSV;
+			var previousName = "";
+			var comparatorId = 0;
+			
+			function plot() {
+				var data = parsedCSV;
+
+				var m = [10., 20., 20., 100.],
+				    w = 600. - m[1] - m[3],
+				    h = 250. - m[0] - m[2];
+
+				var x = d3.scale.linear().range([0, w]),
+				    y = d3.scale.ordinal().rangeRoundBands([0, h], .1);
+
+				var yAxis = d3.svg.axis().scale(y).orient("left").tickSize(0);
+
+				var svg = d3.select("#graph").append("svg")
+				    .attr("width", w + m[1] + m[3])
+				    .attr("height", h + m[0] + m[2])
+				  .append("g")
+				    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+				// Set the scale domain.
+				var minTime = d3.min(data, function(d) { return (d["Error?"] == 0) ? d["Execution Time"] : null; })
+				// alert(minTime)
+			  x.domain([0, d3.max(data, function(d) { return d["Execution Time"] / minTime; })]);
+			  y.domain(data.map(function(d) { return d["Interpreter_name"]; }));
+
+			  var bar = svg.selectAll("g.bar")
+			      .data(data)
+			    .enter().append("g")
+			      .attr("class", "bar")
+			      .attr("transform", function(d) { return "translate(0," + y(d["Interpreter_name"]) + ")"; });
+
+			  bar.append("rect")
+			      .attr("width", function(d) { return x((d["Error?"] == 0) ? d["Execution Time"]/minTime : 0.0); })
+			      .attr("height", y.rangeBand());
+
+			  bar.append("text")
+			      .attr("class", "value")
+			      .attr("x", function(d) { return x(d["Execution Time"]/minTime); })
+			      .attr("y", y.rangeBand() / 2)
+			      .attr("dx", -3)
+			      .attr("dy", ".35em")
+			      .attr("text-anchor", "end")
+			      .text(function(d) { return ((d["Error?"] == 0) ? (d["Execution Time"]/minTime).toFixed(2) : ""); });
+
+			  svg.append("g")
+			      .attr("class", "x axis")
+
+			  svg.append("g")
+			      .attr("class", "y axis")
+			      .call(yAxis);
+			}
+
+			d3.select("#content").selectAll("h1").text(example + " (" + branch +")")
+			d3.select("#content").select("#src").attr("href", "http://code.google.com/p/deap/source/browse/examples/"+encodeURIComponent(example)+".py?name="+branch)
+			d3.csv(branch+"/data/all/"+example+".csv", function(data){
+				parsedCSV = data
+				parsedCSV.forEach(function(o){
+					o["Error?"] = parseInt(o["Error?"])
+					o["Execution Time"] = parseFloat(o["Execution Time"])
+					// For changeset link : http://code.google.com/p/deap/source/detail?r=
+					o["Changeset"] = "<a href='http://code.google.com/p/deap/source/detail?r="+o["Changeset"]+"'>"+o["Changeset"]+"</a>"
+					o["Interpreter_name"] = interpreter[o["Interpreter"]]
+					o["Interpreter"] = "<a href='./results.html?version="+o["Interpreter"]+"&amp;branch="+branch+"'>"+interpreter[o["Interpreter"]]+"</a>"
+				});
+				table("Interpreter")
+				plot()
+			});
+
+		</script>
+
+	</body>
+</html>

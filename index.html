@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>DEAP speed tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="https://raw.githubusercontent.com/twbs/bootstrap/v3.2.0/dist/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+
+    <!-- Tracking -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-15144370-4']);
+      _gaq.push(['_trackPageview']);
+    </script>
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="./index.html">DEAP speed</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="./index.html">Home</a></li>
+              <!-- <li><a href="#about">About</a></li> -->
+              <!-- <li><a href="#contact">Contact</a></li> -->              
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="hero-unit">
+        <!-- <h1>DEAP speed</h1> -->
+        <p>Welcome to the DEAP speed project page, this project aims at benchmarking the execution time of every examples provided with DEAP for different versions of Python interpreters for DEAP stable and development branch.</p>
+
+        <p><a class="btn btn-primary btn-large" href="http://deap.googlecode.com/">Learn more about DEAP &raquo;</a></p>
+      </div>
+
+      <hr class="soften">
+
+      <div class="marketing">
+        <h2>Computer specifications</h2>
+        <p>The examples are executed every night on a machine graciously provided by the <a href="http://vision.gel.ulaval.ca/en/index.php">Computer Vision and Systems Laboratory</a> at <a href="http://www.ulaval.ca/">Université Laval</a>. Here are its specifications :</p>
+        <ul>
+          <li>Asus P6T</li>
+          <li>Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz</li>
+          <li>6 x 2GB triple-channel PC3-8500 (DDR3-1066)</li>
+          <li>Barracuda 7200.12 SATA 3Gb/s 1TB Hard Drive</li>
+          <li>nVidia GeForce 9600 GT</li>
+        </ul>
+        <p>The machine is configured with Ubuntu 12.04 and the interpreters are compiled with GCC 4.6.3.</p>
+
+        <hr class="soften">
+
+        <h2>Results</h2>
+        <p>The results are currently presented in their most Spartan denomination. We will eventually add plots of the execution times over time. For each branch, you can select the interpreter you are interested in. This will show you a table containing the name of the example file, the date of execution, the Mercurial changeset, the execution time, and the error flag. If the error flag is 0, the execution went well, if it is greater then 0, something went wrong.</p>
+		<script type="text/javascript" src="data/interpreters.js"></script>
+        <script type="text/javascript">
+          function result_buttons(branch) {
+            var interpreter_keys = [];
+            for (var version in interpreter) {
+                interpreter_keys.push(version);
+            }
+            interpreter_keys.sort()
+            for (var index in interpreter_keys) {
+               var version = interpreter_keys[index];
+               var ni = document.getElementById(branch+'_row');
+               var newdiv = document.createElement('div');
+               newdiv.setAttribute('class','span2');
+               var newtitle = document.createElement('h4');
+               newtitle.innerHTML = interpreter[version];
+               newdiv.appendChild(newtitle);
+               newdiv.appendChild(document.createElement('p'));
+               var paragraph = document.createElement('p');
+               var link = document.createElement('a')
+               paragraph.appendChild(link);
+               link.setAttribute('class', 'btn');
+               link.setAttribute('href', 'results.html?branch='+branch+'&amp;version='+version);
+               link.innerHTML='View results &raquo;';
+               newdiv.appendChild(paragraph);
+               ni.appendChild(newdiv);
+           }
+         }
+        </script>
+        <h3>Stable branch</h3>
+        <div class="row" id="default_row">
+          <script type="text/javascript">result_buttons('default')</script>
+        </div>
+        <h3>Development branch</h3>
+        <div class="row" id="dev_row">
+          <script type="text/javascript">result_buttons('dev')</script>
+        </div>
+
+      <hr class="soften">
+
+     <!-- Footer
+      ================================================== -->
+      <footer class="footer">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+      </footer>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-transition.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-alert.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tab.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-button.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-carousel.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-typeahead.js"></script>
+    
+    <!-- Analytics
+    ================================================== -->    
+    <script type="text/javascript">
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+
+  </body>
+</html>
